@@ -1,5 +1,5 @@
 // Service worker: aplikasi tetap bisa dibuka saat offline. Naikkan V setiap kali file diperbarui.
-const V = 'catuang-v3';
+const V = 'catuang-v6';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(

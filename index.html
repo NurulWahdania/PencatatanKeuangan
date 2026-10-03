@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Catatan Uang">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--page:linear-gradient(140deg,#dbeafe 0%,#93c5fd 45%,#3b82f6 100%);--bg:rgba(255,255,255,.4);--card:rgba(255,255,255,.55);--modal:rgba(255,255,255,.82);--ink:#0b1f4d;--mute:#3f5a8c;--line:rgba(255,255,255,.7);--in:#0a8f5b;--out:#d6312b;--acc:#1d4ed8;--accfg:#fff;--dk:0;--shadow:0 8px 32px rgba(30,64,175,.18);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:linear-gradient(140deg,#050d24 0%,#0b2260 55%,#123a9c 100%);--bg:rgba(255,255,255,.08);--card:rgba(16,32,80,.55);--modal:rgba(14,28,72,.86);--ink:#e6efff;--mute:#9db4e0;--line:rgba(160,190,255,.22);--in:#4ade9a;--out:#ff7a72;--acc:#3b82f6;--accfg:#fff;--dk:1;--shadow:0 8px 32px rgba(0,0,0,.35)}}
@@ -117,6 +117,35 @@ html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:contain}
  #v-home .hero,#v-home #bkn,#v-home #dbn{grid-column:1/-1}
  #v-chart,#v-bud{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}#v-chart>*,#v-bud>*{margin:0!important}}
 @media(display-mode:standalone){body{-webkit-user-select:none;user-select:none}input,textarea{-webkit-user-select:text;user-select:text}}
+/* ringan: tanpa blur berat, tanpa elemen fixed berfilter */
+html{background:radial-gradient(circle at 88% 0%,rgba(96,165,250,.5),transparent 42%),radial-gradient(circle at 0% 75%,rgba(165,180,252,.45),transparent 40%),var(--page);min-height:100%}
+body{background:none!important;min-height:100vh;overflow-x:hidden}
+body::before,body::after{display:none!important}
+.card,.ic,.month input,.filters input,.filters select,.hero,.hero .mini,nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.card{box-shadow:0 2px 10px rgba(30,64,175,.12);content-visibility:auto;contain-intrinsic-size:auto 160px}
+.hero{box-shadow:0 4px 16px rgba(30,64,175,.25)}
+nav{background:var(--modal)}
+dialog{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+dialog::backdrop{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,20,60,.55)}
+/* header HP: judul + tombol di satu baris, pilih bulan di bawahnya */
+@media(max-width:600px){
+ header{flex-wrap:wrap;gap:8px;margin-bottom:12px}
+ .month{display:contents}
+ h1{font-size:19px;white-space:nowrap;flex:1 1 auto}
+ .month .ic{order:1}
+ #bulan{order:2;flex:1 1 100%;width:100%}
+}
+/* tampilan datar: tanpa efek kaca sama sekali */
+:root{--card:rgba(255,255,255,.94);--modal:#fff;--bg:#e9f1ff;--line:#d3e2fb;--mute:#4a6492}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--card:#14213f;--modal:#14213f;--bg:#1c2c52;--line:#2a3d6b}}
+:root[data-theme="dark"]{--card:#14213f;--modal:#14213f;--bg:#1c2c52;--line:#2a3d6b}
+*,*::before,*::after,dialog::backdrop{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+dialog::backdrop{background:rgba(8,20,60,.6)}
+.hero{background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 2px 8px rgba(30,64,175,.25)}
+.card{box-shadow:0 1px 4px rgba(30,64,175,.10)}
+dialog{box-shadow:0 10px 30px rgba(10,30,90,.35)}dialog[open]{animation-duration:.15s}
+nav{background:var(--card);border-top:1px solid var(--line)}
+.fab{box-shadow:0 3px 10px rgba(37,99,235,.4)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -218,6 +247,7 @@ html{-webkit-tap-highlight-color:transparent}body{overscroll-behavior-y:contain}
  <div class="row2" style="margin-bottom:8px"><button class="save" id="shsave">Simpan &amp; kirim</button><button class="save" id="shget" style="background:var(--bg);color:var(--ink)">Ambil dari Sheet</button></div>
  <button class="link" id="shq" style="width:100%;text-align:center">Ambil catatan dari pintasan HP sekarang</button>
  <button class="link" id="inst" hidden style="width:100%;text-align:center">Pasang sebagai aplikasi di perangkat ini</button>
+ <button class="link" id="shtest" style="width:100%;text-align:center">Tes koneksi ke Google Sheet</button>
  <div id="smsg" style="font-size:13px;min-height:18px;margin-bottom:6px"></div>
  <div id="bmsg" style="font-size:13px;min-height:18px;margin-bottom:4px"></div>
  <button class="link" id="bclose" style="width:100%;text-align:center">Tutup</button>
@@ -302,7 +332,7 @@ function extra(){
  $('#recl').innerHTML=S.rec.map(x=>`<div class="tx"><div class="e">${emoji(x.t,x.c)}</div><div class="m"><b>${esc(x.c)}</b><span>Tiap tanggal ${x.day}${x.n?' · '+esc(x.n):''}</span></div><div class="amt ${x.t}">${rp(x.a)}</div><button class="del" data-r="${x.id}" aria-label="Hentikan">✕</button></div>`).join('')||'<div class="empty">Belum ada. Centang "Ulangi tiap bulan" saat mencatat transaksi.</div>';
  $('#goals').innerHTML=S.goals.map(g=>{const p=Math.min(100,g.s/g.a*100);return `<div class="bi"><div class="bh"><b>🎯 ${esc(g.n)}</b><span><button class="link" data-g="${g.id}" data-do="dep">+ Setor</button> <button class="link" data-g="${g.id}" data-do="rm" aria-label="Hapus target">Hapus</button></span></div><div class="pb"><i style="width:${p}%;background:var(--in)"></i></div><small>${rp(g.s)} dari ${rp(g.a)} (${Math.round(p)}%)</small></div>`}).join('')||'<div class="empty">Belum ada target tabungan.</div>';
 }
-const _r=render;render=function(){_r();extra();cal();debts()};
+const _r=render;render=function(){_r();extra();if(!$('#v-cal').hidden)cal();debts()};
 $('#inc').oninput=e=>{const v=e.target.value.replace(/\D/g,'');e.target.value=v?rp(+v):''};
 $('#inc').onchange=e=>{S.income=+e.target.value.replace(/\D/g,'');save();render()};
 $('#budl').onchange=e=>{const i=e.target.closest('.pc');if(!i)return;const v=Math.min(100,Math.max(0,+i.value||0));if(v)S.pct[i.dataset.c]=v;else delete S.pct[i.dataset.c];save();render()};
@@ -323,7 +353,7 @@ $('#newgoal').onclick=async()=>{const n=(await uiPrompt('Nama target (mis. Dana 
 // navigasi
 document.querySelectorAll('nav [data-v]').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('nav .t').forEach(x=>x.classList.toggle('on',x===b));
- ['home','hist','cal','chart','bud','debt'].forEach(v=>$('#v-'+v).hidden=v!==b.dataset.v)});
+ ['home','hist','cal','chart','bud','debt'].forEach(v=>$('#v-'+v).hidden=v!==b.dataset.v);if(b.dataset.v==='cal')cal()});
 $('#bulan').onchange=e=>{bulan=e.target.value||bulan;page=1;render()};
 ['#q','#fcat','#ftipe','#fall'].forEach(q=>$(q).oninput=()=>{page=1;render()});
 $('#hist').onclick=e=>{const b=e.target.closest('[data-p]');if(b&&!b.disabled){page=+b.dataset.p;render();$('#hist').scrollIntoView({block:'start',behavior:'smooth'})}};
@@ -425,11 +455,16 @@ let SH={url:'',token:''};try{SH=JSON.parse(localStorage.getItem('catuang_sheet')
 let shT=null;
 const hm=()=>new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
 const sm=(t,ok)=>{const m=$('#smsg');m.textContent=t;m.style.color=ok?'var(--in)':'var(--out)'};
+const why=e=>{const m=String(e&&e.message||e);
+ if(/claude/i.test(location.hostname)||window.top!==window)return 'halaman ini dibuka dari pratinjau Claude yang memblokir koneksi ke Google. Buka aplikasi dari alamat GitHub Pages Anda (https://namaanda.github.io/...).';
+ if(/Failed to fetch|NetworkError|Load failed/i.test(m))return 'tidak bisa menjangkau Apps Script. Cek URL (harus berakhiran /exec), akses deployment harus "Anyone", dan matikan ad blocker. Ketuk Tes koneksi.';
+ if(/JSON|Unexpected token/i.test(m))return 'Apps Script meminta login Google. Ubah "Who has access" menjadi Anyone, lalu deploy versi baru.';
+ return m};
 async function shCall(body){const r=await fetch(SH.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:SH.token,...body})});const j=await r.json();if(!j.ok)throw new Error(j.error||'Gagal');return j}
 function sync(){if(!SH.url||!SH.token)return;clearTimeout(shT);shT=setTimeout(sendNow,2000)}
 async function sendNow(){if(!SH.url)return;sm('Mengirim ke Sheet…',1);
  try{await shCall({action:'save',data:JSON.parse(dump())});S.lastBackup=Date.now();try{localStorage.setItem('catuang',JSON.stringify(S))}catch(e){}sm('Tersimpan di Sheet pukul '+hm(),1)}
- catch(e){sm('Gagal kirim: '+e.message,0);toast('Gagal sinkron ke Sheet')}}
+ catch(e){sm('Gagal kirim: '+why(e),0);toast('Gagal sinkron ke Sheet')}}
 async function checkRemote(ts){if(!SH.url)return;
  try{const j=await shCall({action:'load'});if(!j.json)return;const d=JSON.parse(j.json);
   if((d.updatedAt||0)>ts&&await uiConfirm('Data di Google Sheet lebih baru dari data di perangkat ini. Pulihkan dari Sheet?')){$('#btxt').value=j.json;$('#bdlg').showModal();$('#brest').click()}}
@@ -440,8 +475,17 @@ $('#bk').addEventListener('click',()=>{$('#shurl').value=SH.url;$('#shtok').valu
 $('#shsave').onclick=()=>{const u=$('#shurl').value.trim(),t=$('#shtok').value.trim();
  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)||!t)return sm('Isi URL Web App (berakhiran /exec) dan token.',0);
  SH={url:u,token:t};try{localStorage.setItem('catuang_sheet',JSON.stringify(SH))}catch(e){}sendNow()};
+$('#shtest').onclick=async()=>{const u=$('#shurl').value.trim(),t=$('#shtok').value.trim();
+ if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u))return sm('URL harus diawali https://script.google.com/ dan berakhiran /exec.',0);
+ sm('Langkah 1: menghubungi skrip…',1);
+ try{const j=await (await fetch(u)).json();if(!j.ok)throw new Error('Balasan tidak dikenal')}catch(e){return sm('Langkah 1 gagal: '+why(e),0)}
+ if(!t)return sm('Langkah 1 berhasil: skrip aktif. Isi token untuk menguji langkah 2.',1);
+ sm('Langkah 2: memeriksa token…',1);
+ try{const j=await (await fetch(u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:t,action:'load'})})).json();
+  sm(j.ok?'Semua langkah berhasil. Klik Simpan & kirim.':'Langkah 2 gagal: '+(j.error||'ditolak')+(j.error==='Token salah'?'. Samakan dengan TOKEN di skrip, lalu pastikan skrip sudah disimpan dan di-deploy ulang.':''),!!j.ok)}
+ catch(e){sm('Langkah 2 gagal: '+why(e),0)}};
 $('#shget').onclick=async()=>{if(!SH.url)return sm('Simpan URL dan token dulu.',0);sm('Mengambil data…',1);
- try{const j=await shCall({action:'load'});if(!j.json)return sm('Sheet masih kosong.',0);$('#btxt').value=j.json;$('#brest').click()}catch(e){sm('Gagal: '+e.message,0)}};
+ try{const j=await shCall({action:'load'});if(!j.json)return sm('Sheet masih kosong.',0);$('#btxt').value=j.json;$('#brest').click()}catch(e){sm('Gagal: '+why(e),0)}};
 
 let lastPull=0;
 async function pullQueue(manual){if(!SH.url||!SH.token)return;if(!manual&&Date.now()-lastPull<10000)return;lastPull=Date.now();
